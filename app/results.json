@@ -1,0 +1,76 @@
+{
+  "snmp_auth": [
+    {
+      "hostname": "GPU-Leaf1",
+      "snmp_auth": {
+        "engine_id": "80 00 0a 4c 01 ac 10 00 03",
+        "authentication_key": "$9$jaHkPz369tun6A0BIrlZUDk5Q9Cu01R3nCu0BEhdbwgGDqmfn9A4aQF3/tpxN-d24JZjHkPLxjHmP3ntuOIylxNd2gJwsFn/Cu0VwsYJGji.m5Qkq0B",
+        "privacy_key": "$9$jaHkPz369tun6A0BIrlZUDk5Q9Cu01R3nCu0BEhdbwgGDqmfn9A4aQF3/tpxN-d24JZjHkPLxjHmP3ntuOIylxNd2gJws"
+      }
+    },
+    {
+      "hostname": "GPU-Leaf3",
+      "snmp_auth": {
+        "engine_id": "80 00 0a 4c 01 ac 10 00 05",
+        "authentication_key": "$9$jaH5Q6/tIRSHq5F69OBbsY4GDHqmzF/TQRhcyW8Hq.mQFn6A0ORpuEyKv7Ndbs2gJDikm5Q7-jHkqf5369ABISyKL7-eKJGDjPfhSyl8XNdbaGDlK4a",
+        "privacy_key": "$9$jaH5Q6/tIRSHq5F69OBbsY4GDHqmzF/TQRhcyW8Hq.mQFn6A0ORpuEyKv7Ndbs2gJDikm5Q7-jHkqf5369ABISyKL7-eK"
+      }
+    },
+    {
+      "hostname": "Spine1",
+      "snmp_auth": {
+        "engine_id": "80 00 0a 4c 01 ac 10 00 00",
+        "authentication_key": "$9$jaqTz/9pu1R3n9p0OREevWL-VsYoZDibwz3n/0OVws2ZUHkPfQFji1REhrlZUDimf9ApBRh/9u1RhKvgoaZHqTQn9CuJGDk.mF369AuIEevWx7VuO7-",
+        "privacy_key": "$9$jaqTz/9pu1R3n9p0OREevWL-VsYoZDibwz3n/0OVws2ZUHkPfQFji1REhrlZUDimf9ApBRh/9u1RhKvgoaZHqTQn9CuJG"
+      }
+    },
+    {
+      "hostname": "GPU-Leaf4",
+      "snmp_auth": {
+        "engine_id": "80 00 0a 4c 01 ac 10 00 06",
+        "authentication_key": "$9$jakfTF39OIEpuWL7-ws4aZUjq.P56CtTQevW8dVHq.f369ApREymfylKvLXGDjkfTz36Cp03ntOIEeK4aJZHqmfTn6AYgz36/0OVwsYaZk.P3nCs2P5",
+        "privacy_key": "$9$jakfTF39OIEpuWL7-ws4aZUjq.P56CtTQevW8dVHq.f369ApREymfylKvLXGDjkfTz36Cp03ntOIEeK4aJZHqmfTn6AYg"
+      }
+    },
+    {
+      "hostname": "Spine3",
+      "snmp_auth": {
+        "engine_id": "80 00 0a 4c 01 ac 10 00 02",
+        "authentication_key": "$9$jaiP5Qz6pu1n68X7-wsJGDHqfz36pu1ikPQF3tpvW8X7V2gJkmfJZDkPfzFvW8XdbwYg4ZUSrZUiH5T69Apu1evW87-/CX7NdsYP5Tz9AOBEyevTzev",
+        "privacy_key": "$9$jaiP5Qz6pu1n68X7-wsJGDHqfz36pu1ikPQF3tpvW8X7V2gJkmfJZDkPfzFvW8XdbwYg4ZUSrZUiH5T69Apu1evW87-/C"
+      }
+    },
+    {
+      "hostname": "Spine2",
+      "snmp_auth": {
+        "engine_id": "80 00 0a 4c 01 ac 10 00 01",
+        "authentication_key": "$9$jaHqfTQnAtOaZtu0BSy4aJZHqP5Qzn/Hk0BRhKv8X7dYgGUH5T3s2QFn9pu-VbwoJHqmF39Pf1RhyKvDiHq.569Apu13nA0BIcS24oJZjq.5zn/mPO1",
+        "privacy_key": "$9$jaHqfTQnAtOaZtu0BSy4aJZHqP5Qzn/Hk0BRhKv8X7dYgGUH5T3s2QFn9pu-VbwoJHqmF39Pf1RhyKvDiHq.569Apu13n"
+      }
+    },
+    {
+      "hostname": "GPU-Leaf2",
+      "snmp_auth": {
+        "engine_id": "80 00 0a 4c 01 ac 10 00 04",
+        "authentication_key": "$9$jaqTz/CtpO19CBEyr8L-VwY2aDjqPfzGUtu1IcSYg4JikFn/01Rn6vWLX-dHq.5n/pu1cSefTSrvWx7dbs2JGHkPzn/wYFn/A0O7-dVgoGUHqP5JZ69",
+        "privacy_key": "$9$jaqTz/CtpO19CBEyr8L-VwY2aDjqPfzGUtu1IcSYg4JikFn/01Rn6vWLX-dHq.5n/pu1cSefTSrvWx7dbs2JGHkPzn/wY"
+      }
+    },
+    {
+      "hostname": "vast-storage-001-leaf1",
+      "snmp_auth": {
+        "engine_id": "80 00 0a 4c 01 ac 10 00 07",
+        "authentication_key": "$9$jaimfFn/AtOZUtuO1yr4aJUqmfTz39APfBIcyKvX7-db24oGq.5HkBIRhrl4aJZHqf5F6Ct3nKM8xdV.PfQ69Ap0BRhk.Qn69OBRhSe8X7-V2oJ7NfT",
+        "privacy_key": "$9$jaimfFn/AtOZUtuO1yr4aJUqmfTz39APfBIcyKvX7-db24oGq.5HkBIRhrl4aJZHqf5F6Ct3nKM8xdV.PfQ69Ap0BRhk."
+      }
+    },
+    {
+      "hostname": "vast-storage-001-leaf2",
+      "snmp_auth": {
+        "engine_id": "80 00 0a 4c 01 ac 10 00 08",
+        "authentication_key": "$9$jak.56/tOBECA0IEcle4aJDqm5QFt0BJG36CA0ORhSylMxNdbwg8L-wsgJZDikqTz3nCtpBn6u1EhKvaZGDi.fTz9CuZUApuBEhgoaZk.5QFt0Bn6WL",
+        "privacy_key": "$9$jak.56/tOBECA0IEcle4aJDqm5QFt0BJG36CA0ORhSylMxNdbwg8L-wsgJZDikqTz3nCtpBn6u1EhKvaZGDi.fTz9CuZU"
+      }
+    }
+  ]
+}
