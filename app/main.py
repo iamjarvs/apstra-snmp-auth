@@ -17,8 +17,7 @@ from utils.helpers import (
     select_blueprint,
     get_system_ids,
     execute_command_on_system,
-    extract_snmp_engine_id,
-    generate_snmp_keys,
+    extract_snmp_auth_keys,
     manage_property_set_upload,
     format_results_to_json
 )
@@ -96,10 +95,10 @@ def main():
     if not password:
         password = getpass("Enter Apstra password: ")
     
-    # Get SNMP password for key generation
-    snmp_password = args.snmp_password
-    if not snmp_password:
-        snmp_password = getpass("Enter SNMP password for key generation: ")
+    # # Get SNMP password for key generation
+    # snmp_password = args.snmp_password
+    # if not snmp_password:
+    #     snmp_password = getpass("Enter SNMP password for key generation: ")
     
     # Get salt and rand characters
     salt = args.salt
@@ -161,7 +160,7 @@ def main():
     # Execute command on each system
     systems_results = []
     failed_systems = []
-    command = "show snmp v3"
+    command = "show configuration snmp"
     print(f"Command to execute on all systems: '{command}'")
     
     for idx, system in enumerate(systems, 1):
@@ -184,37 +183,27 @@ def main():
             try:
                 result_json = json.loads(result)
                 
-                # Extract SNMP auth
-                engine_id = extract_snmp_engine_id(result_json)
+                # Extract SNMP auth keys
+                keys_result = extract_snmp_auth_keys(result_json)
                 
                 # Check if we got an error during extraction
-                if engine_id.startswith("extraction_error") or engine_id.startswith("unexpected_error"):
-                    print(f"[{idx}/{len(systems)}] WARNING: Could not extract SNMP engine ID from {hostname}: {engine_id}")
+                if "error" in keys_result:
+                    print(f"[{idx}/{len(systems)}] WARNING: Could not extract SNMP keys from {hostname}: {keys_result['error']}")
                     failed_systems.append({
                         "hostname": hostname,
-                        "reason": engine_id
+                        "reason": keys_result['error']
                     })
                 else:
-                    # Generate SNMP keys
-                    try:
-                        keys = generate_snmp_keys(engine_id, snmp_password, salt, rand)
-                        
-                        # Store the result for this system
-                        systems_results.append({
-                            "hostname": hostname,
-                            "snmp_auth": {
-                                "engine_id": engine_id,
-                                "authentication_key": keys["authentication_key"],
-                                "privacy_key": keys["privacy_key"]
-                            }
-                        })
-                        print(f"[{idx}/{len(systems)}] Command execution and key generation successful for {hostname}.")
-                    except Exception as e:
-                        print(f"[{idx}/{len(systems)}] WARNING: Key generation failed for {hostname}: {e}")
-                        failed_systems.append({
-                            "hostname": hostname,
-                            "reason": f"Key generation error: {str(e)}"
-                        })
+                    # Store the result for this system
+                    systems_results.append({
+                        "hostname": hostname,
+                        "system_id": system_id,
+                        "snmp-auth": {
+                            "authentication_key": keys_result["authentication_key"],
+                            "privacy_key": keys_result["privacy_key"]
+                        }
+                    })
+                    print(f"[{idx}/{len(systems)}] Command execution and key extraction successful for {hostname}.")
             except json.JSONDecodeError as e:
                 print(f"[{idx}/{len(systems)}] WARNING: Could not parse command result from {hostname}: {e}")
                 failed_systems.append({
@@ -245,24 +234,28 @@ def main():
     
      # Format results
     print("Formatting results into final JSON payload...")
-    json_payload = {
-        "snmp_auth": systems_results
+    file_json_payload = {
+        "snmp-auth": systems_results
     }
-    
+
+    # Format the results for the property set (flat structure)
+    property_set_payload = format_results_to_json(systems_results)
+
     # Save to file
     output_file = args.output
     with open(output_file, 'w') as f:
-        json.dump(json_payload, f, indent=2)
-    
+        json.dump(file_json_payload, f, indent=2)
+
     print(f"Results saved to {output_file}")
-    
+
     # Upload as property set
     print("\nWould you like to upload these results as a property set to Apstra?")
     choice = input("Enter 'y' to continue, any other key to skip: ")
-    
+
     if choice.lower() == 'y':
         # Upload the results as a property set
-        success = manage_property_set_upload(server, token, json_payload)
+        property_set_name = input("\nEnter property set name (default: snmp_auth): ").strip() or "snmp_auth"
+        success = manage_property_set_upload(server, token, property_set_payload, property_set_name)
         
         if success:
             print("\nProperty set operation completed successfully.")
@@ -277,7 +270,7 @@ def main():
     print("Sample of JSON payload:")
     
     # Format a sample of the JSON for display
-    sample_json = json.dumps(json_payload, indent=2)
+    sample_json = json.dumps(file_json_payload, indent=2)
     if len(sample_json) > 500:
         print(sample_json[:500] + "...")
     else:

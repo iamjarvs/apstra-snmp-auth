@@ -1,75 +1,67 @@
 {
-  "snmp_auth": [
+  "snmp-auth": [
     {
       "hostname": "GPU-Leaf1",
-      "snmp_auth": {
-        "engine_id": "80 00 0a 4c 01 ac 10 00 03",
-        "authentication_key": "$9$jaHkPz369tun6A0BIrlZUDk5Q9Cu01R3nCu0BEhdbwgGDqmfn9A4aQF3/tpxN-d24JZjHkPLxjHmP3ntuOIylxNd2gJwsFn/Cu0VwsYJGji.m5Qkq0B",
-        "privacy_key": "$9$jaHkPz369tun6A0BIrlZUDk5Q9Cu01R3nCu0BEhdbwgGDqmfn9A4aQF3/tpxN-d24JZjHkPLxjHmP3ntuOIylxNd2gJws"
+      "system_id": "52540057CB0E",
+      "snmp-auth": {
+        "authentication_key": "$9$qmPT69p1EyTzF6AuIRrevW-wYgoZDisYTz36AtX7N",
+        "privacy_key": "$9$xyb7bY4aUjHmZUDHm53ntuO1yKM8XNVwvMZUjHmPEcS"
       }
     },
     {
       "hostname": "GPU-Leaf3",
-      "snmp_auth": {
-        "engine_id": "80 00 0a 4c 01 ac 10 00 05",
-        "authentication_key": "$9$jaH5Q6/tIRSHq5F69OBbsY4GDHqmzF/TQRhcyW8Hq.mQFn6A0ORpuEyKv7Ndbs2gJDikm5Q7-jHkqf5369ABISyKL7-eKJGDjPfhSyl8XNdbaGDlK4a",
-        "privacy_key": "$9$jaH5Q6/tIRSHq5F69OBbsY4GDHqmzF/TQRhcyW8Hq.mQFn6A0ORpuEyKv7Ndbs2gJDikm5Q7-jHkqf5369ABISyKL7-eK"
+      "system_id": "525400C78586",
+      "snmp-auth": {
+        "authentication_key": "$9$cQPyrKX7V2oGKMWX-bg4UjHqQn/Ct01R6/KM8X-dP5T",
+        "privacy_key": "$9$VxbgaGDk.PQikqPQ3CABIEcvLxNdw24Xxik.PQzreK"
       }
     },
     {
       "hostname": "Spine1",
-      "snmp_auth": {
-        "engine_id": "80 00 0a 4c 01 ac 10 00 00",
-        "authentication_key": "$9$jaqTz/9pu1R3n9p0OREevWL-VsYoZDibwz3n/0OVws2ZUHkPfQFji1REhrlZUDimf9ApBRh/9u1RhKvgoaZHqTQn9CuJGDk.mF369AuIEevWx7VuO7-",
-        "privacy_key": "$9$jaqTz/9pu1R3n9p0OREevWL-VsYoZDibwz3n/0OVws2ZUHkPfQFji1REhrlZUDimf9ApBRh/9u1RhKvgoaZHqTQn9CuJG"
+      "system_id": "525400D08EAA",
+      "snmp-auth": {
+        "authentication_key": "$9$vYGW8xbs4GjqxN-b2oUD.P5Q9p0BIhylu0xNdb2g36/",
+        "privacy_key": "$9$6mhd/pOIEylK8cyrK8xVb4aZU.5QFn9tuTQcylK8Likq"
       }
     },
     {
       "hostname": "GPU-Leaf4",
-      "snmp_auth": {
-        "engine_id": "80 00 0a 4c 01 ac 10 00 06",
-        "authentication_key": "$9$jakfTF39OIEpuWL7-ws4aZUjq.P56CtTQevW8dVHq.f369ApREymfylKvLXGDjkfTz36Cp03ntOIEeK4aJZHqmfTn6AYgz36/0OVwsYaZk.P3nCs2P5",
-        "privacy_key": "$9$jakfTF39OIEpuWL7-ws4aZUjq.P56CtTQevW8dVHq.f369ApREymfylKvLXGDjkfTz36Cp03ntOIEeK4aJZHqmfTn6AYg"
+      "system_id": "525400644160",
+      "snmp-auth": {
+        "authentication_key": "$9$AKR4puBcyKL7VBIRclvXxbs24Dk.P5zn/q.BIEcleJGU",
+        "privacy_key": "$9$E4shlv8X-Vwg7-dwgaDjmfTzCuO1Rcre0O7-Vwg4n/9"
       }
     },
     {
       "hostname": "Spine3",
-      "snmp_auth": {
-        "engine_id": "80 00 0a 4c 01 ac 10 00 02",
-        "authentication_key": "$9$jaiP5Qz6pu1n68X7-wsJGDHqfz36pu1ikPQF3tpvW8X7V2gJkmfJZDkPfzFvW8XdbwYg4ZUSrZUiH5T69Apu1evW87-/CX7NdsYP5Tz9AOBEyevTzev",
-        "privacy_key": "$9$jaiP5Qz6pu1n68X7-wsJGDHqfz36pu1ikPQF3tpvW8X7V2gJkmfJZDkPfzFvW8XdbwYg4ZUSrZUiH5T69Apu1evW87-/C"
+      "system_id": "525400D544AA",
+      "snmp-auth": {
+        "authentication_key": "$9$77-dwoJDqPQwY2oGj.mz369ORhSrKWLEhwYgoGUtu0",
+        "privacy_key": "$9$rX/lWXNds24ZbsY4ZDq.QFn/0IEcyeM8REbs24ZGApu"
       }
     },
     {
       "hostname": "Spine2",
-      "snmp_auth": {
-        "engine_id": "80 00 0a 4c 01 ac 10 00 01",
-        "authentication_key": "$9$jaHqfTQnAtOaZtu0BSy4aJZHqP5Qzn/Hk0BRhKv8X7dYgGUH5T3s2QFn9pu-VbwoJHqmF39Pf1RhyKvDiHq.569Apu13nA0BIcS24oJZjq.5zn/mPO1",
-        "privacy_key": "$9$jaHqfTQnAtOaZtu0BSy4aJZHqP5Qzn/Hk0BRhKv8X7dYgGUH5T3s2QFn9pu-VbwoJHqmF39Pf1RhyKvDiHq.569Apu13n"
+      "system_id": "525400FE3D4B",
+      "snmp-auth": {
+        "authentication_key": "$9$r/HeKWNdsoZjWLXNbYaJik.P39Ap01EcCAWLxNbwTzF",
+        "privacy_key": "$9$.mQ3/CuO1htu01hyvM7-VwaUjHqPTzDjtuO1hc24o"
       }
     },
     {
       "hostname": "GPU-Leaf2",
-      "snmp_auth": {
-        "engine_id": "80 00 0a 4c 01 ac 10 00 04",
-        "authentication_key": "$9$jaqTz/CtpO19CBEyr8L-VwY2aDjqPfzGUtu1IcSYg4JikFn/01Rn6vWLX-dHq.5n/pu1cSefTSrvWx7dbs2JGHkPzn/wYFn/A0O7-dVgoGUHqP5JZ69",
-        "privacy_key": "$9$jaqTz/CtpO19CBEyr8L-VwY2aDjqPfzGUtu1IcSYg4JikFn/01Rn6vWLX-dHq.5n/pu1cSefTSrvWx7dbs2JGHkPzn/wY"
+      "system_id": "5254009BD0A3",
+      "snmp-auth": {
+        "authentication_key": "$9$EEZcSl8X-sgJlKv87dY2ZUjH5Fn/CpO13nlKM87N.Pf",
+        "privacy_key": "$9$f53/ApBIEy0B1Eye8Ldbs2Gik.PTFnHk0BIEyroJZ"
       }
     },
     {
       "hostname": "vast-storage-001-leaf1",
-      "snmp_auth": {
-        "engine_id": "80 00 0a 4c 01 ac 10 00 07",
-        "authentication_key": "$9$jaimfFn/AtOZUtuO1yr4aJUqmfTz39APfBIcyKvX7-db24oGq.5HkBIRhrl4aJZHqf5F6Ct3nKM8xdV.PfQ69Ap0BRhk.Qn69OBRhSe8X7-V2oJ7NfT",
-        "privacy_key": "$9$jaimfFn/AtOZUtuO1yr4aJUqmfTz39APfBIcyKvX7-db24oGq.5HkBIRhrl4aJZHqf5F6Ct3nKM8xdV.PfQ69Ap0BRhk."
-      }
-    },
-    {
-      "hostname": "vast-storage-001-leaf2",
-      "snmp_auth": {
-        "engine_id": "80 00 0a 4c 01 ac 10 00 08",
-        "authentication_key": "$9$jak.56/tOBECA0IEcle4aJDqm5QFt0BJG36CA0ORhSylMxNdbwg8L-wsgJZDikqTz3nCtpBn6u1EhKvaZGDi.fTz9CuZUApuBEhgoaZk.5QFt0Bn6WL",
-        "privacy_key": "$9$jak.56/tOBECA0IEcle4aJDqm5QFt0BJG36CA0ORhSylMxNdbwg8L-wsgJZDikqTz3nCtpBn6u1EhKvaZGDi.fTz9CuZU"
+      "system_id": "5254006E97D9",
+      "snmp-auth": {
+        "authentication_key": "$9$BZNIRcKMXdwgcyrK8xVb4aZU.5QFn9tuTQcylK8Likq",
+        "privacy_key": "$9$TQ6Cp0IEclBIRclvXxbs24Dk.P5zn/q.BIEcleJGU"
       }
     }
   ]

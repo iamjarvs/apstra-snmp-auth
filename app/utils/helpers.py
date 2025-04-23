@@ -406,7 +406,7 @@ def delete_command_job(server, token, request_id):
         print(f"Error connecting to Apstra server: {e}")
         return False
 
-def extract_snmp_engine_id(result_data):
+def extract_snmp_auth_keys(result_data):
     """
     Extract SNMP engine ID from command result.
     
@@ -432,350 +432,6 @@ def extract_snmp_engine_id(result_data):
     except Exception as e:
         # Catch any other errors
         return f"unexpected_error: {str(e)}"
-
-import hashlib
-import binascii
-import hmac
-import random
-import string
-from itertools import repeat
-from functools import partial
-
-# Constants for junos_encrypt9
-MAGIC = "$9$"
-FAMILY = [
-    "QzF3n6/9CAtpu0O",
-    "B1IREhcSyrleKvMW8LXx",
-    "7N-dVbwsY2g4oaJZGUDj",
-    "iHkq.mPf5T",
-]
-EXTRA = {}
-for counter, value in enumerate(FAMILY):
-    for character in value:
-        EXTRA[character] = 3 - counter
-
-NUM_ALPHA = [x for x in "".join(FAMILY)]
-ALPHA_NUM = {NUM_ALPHA[x]: x for x in range(0, len(NUM_ALPHA))}
-
-ENCODING = [
-    [1, 4, 32],
-    [1, 16, 32],
-    [1, 8, 32],
-    [1, 64],
-    [1, 32],
-    [1, 4, 16, 128],
-    [1, 32, 64],
-]
-
-# Constants for SNMP v3
-LOCAL_ENGINE_PREFIX = "80000a4c04"
-
-def generate_snmp_keys(engine_id, password, salt='j', rand='a'):
-    """
-    Generate SNMP v3 authentication and privacy keys from a password and engine ID.
-    
-    Args:
-        engine_id (str): SNMP engine ID (format: "xx xx xx xx xx...")
-        password (str): Clear text password
-        salt (str): Salt character for encryption (default: 'j')
-        rand (str): Random character for encryption (default: 'a')
-        
-    Returns:
-        dict: Dictionary containing authentication_key and privacy_key
-    """
-    # Remove spaces from engine ID
-    engine_id_clean = engine_id.replace(" ", "")
-    
-    # Generate authentication key
-    auth_key = junos_snmpv3_auth_hash(password, engine_id_clean, hash_alg='sha1')
-    encrypted_auth_key = junos_encrypt9(auth_key, salt, rand)
-    
-    # Generate privacy key
-    priv_key = junos_snmpv3_priv_hash(password, engine_id_clean, hash_alg='sha1')
-    encrypted_priv_key = junos_encrypt9(priv_key, salt, rand)
-    
-    return {
-        "authentication_key": encrypted_auth_key,
-        "privacy_key": encrypted_priv_key
-    }
-
-# SNMP v3 Key Generation Functions
-def hashgen_hash(bytes_data, alg=hashlib.sha1, name=None, raw=False):
-    """
-    Generate a hash of the provided bytes.
-    
-    Args:
-        bytes_data (bytes): Data to hash
-        alg (function): Hash algorithm function
-        name (str): Name of the algorithm (not used)
-        raw (bool): Whether to return raw bytes or hex string
-        
-    Returns:
-        bytes or str: Hash digest
-    """
-    digest = alg(bytes_data).digest()
-    return digest if raw else digest.hex()
-
-def hashgen_expand(substr, target_len):
-    """
-    Expand a substring to the target length by repeating it.
-    
-    Args:
-        substr (str): Substring to expand
-        target_len (int): Target length
-        
-    Returns:
-        str: Expanded string
-    """
-    reps = (target_len // len(substr) + 1)
-    return "".join(list(repeat(substr, reps)))[:target_len]
-
-def hashgen_kdf(password, alg_func=None):
-    """
-    Key derivation function.
-    
-    Args:
-        password (str): Password to derive key from
-        alg_func (function): Hash algorithm function
-        
-    Returns:
-        bytes: Derived key
-    """
-    alg_func = partial(hashgen_hash, alg=hashlib.sha1, name="sha1") if alg_func is None else alg_func
-    
-    data = hashgen_expand(password, 1048576).encode("utf-8")
-    return alg_func(data, raw=True)
-
-def hashgen_derive_msg(passphrase, engine, alg_func):
-    """
-    Derive message for SNMP v3 key generation.
-    
-    Args:
-        passphrase (str): Passphrase
-        engine (str): Engine ID (hex string)
-        alg_func (function): Hash algorithm function
-        
-    Returns:
-        bytes: Derived message
-    """
-    Ku = hashgen_kdf(passphrase, alg_func)
-    E = bytearray.fromhex(engine)
-    
-    return b"".join([Ku, E, Ku])
-
-def junos_snmpv3_engine_id(value, engine_type="local"):
-    """
-    Generate SNMP v3 engine ID.
-    
-    Args:
-        value (str): Value to use for engine ID
-        engine_type (str): Engine type (only 'local' supported)
-        
-    Returns:
-        str: Engine ID
-    """
-    if engine_type == "local":
-        return f"{LOCAL_ENGINE_PREFIX}{bytes(value.encode('utf-8')).hex()}"
-    else:
-        raise ValueError(f"No engine type named {engine_type}")
-
-def junos_snmpv3_auth_hash(value, engine_id, hash_alg='sha1'):
-    """
-    Generate SNMP v3 authentication hash.
-    
-    Args:
-        value (str): Password
-        engine_id (str): Engine ID
-        hash_alg (str): Hash algorithm
-        
-    Returns:
-        str: Authentication hash
-    """
-    alg_func = partial(hashgen_hash, alg=getattr(hashlib, hash_alg), name=hash_alg)
-    Kul_auth = hashgen_derive_msg(value, engine_id, alg_func)
-    return alg_func(Kul_auth)
-
-def junos_snmpv3_priv_hash(value, engine_id, hash_alg='sha1'):
-    """
-    Generate SNMP v3 privacy hash.
-    
-    Args:
-        value (str): Password
-        engine_id (str): Engine ID
-        hash_alg (str): Hash algorithm
-        
-    Returns:
-        str: Privacy hash
-    """
-    alg_func = partial(hashgen_hash, alg=getattr(hashlib, hash_alg), name=hash_alg)
-    Kul_priv = hashgen_derive_msg(value, engine_id, alg_func)
-    if hash_alg == "sha1":
-        return alg_func(Kul_priv)[:32]
-    else:
-        return alg_func(Kul_priv)
-
-# Junos Encryption Functions
-def __nibble(cref, length):
-    """
-    Extract a nibble from a string.
-    
-    Args:
-        cref (str): String to extract from
-        length (int): Length of nibble
-        
-    Returns:
-        tuple: (nibble, rest)
-    """
-    nib = cref[0:length]
-    rest = cref[length:]
-    
-    if len(nib) != length:
-        raise Exception(f"Ran out of characters: hit '{nib}', expecting {length} chars")
-    
-    return nib, rest
-
-def __gap(c1, c2):
-    """
-    Calculate gap between two characters.
-    
-    Args:
-        c1 (str): First character
-        c2 (str): Second character
-        
-    Returns:
-        int: Gap value
-    """
-    return (ALPHA_NUM[str(c2)] - ALPHA_NUM[str(c1)]) % (len(NUM_ALPHA)) - 1
-
-def __gap_decode(gaps, dec):
-    """
-    Decode gaps to character.
-    
-    Args:
-        gaps (list): Gap values
-        dec (list): Decode values
-        
-    Returns:
-        str: Decoded character
-    """
-    num = 0
-    
-    if len(gaps) != len(dec):
-        raise Exception("Nibble and decode size not the same.")
-    
-    for x in range(0, len(gaps)):
-        num += gaps[x] * dec[x]
-    
-    return chr(num % 256)
-
-def __reverse(current):
-    """
-    Reverse a list.
-    
-    Args:
-        current (list): List to reverse
-        
-    Returns:
-        list: Reversed list
-    """
-    reversed_list = list(current)
-    reversed_list.reverse()
-    return reversed_list
-
-def __gap_encode(pc, prev, encode):
-    """
-    Encode a character using gap values.
-    
-    Args:
-        pc (str): Character to encode
-        prev (str): Previous character
-        encode (list): Encoding values
-        
-    Returns:
-        str: Encoded string
-    """
-    __ord = ord(pc)
-    
-    crypt = ""
-    gaps = []
-    for mod in __reverse(encode):
-        gaps.insert(0, int(__ord / mod))
-        __ord %= mod
-    
-    for gap in gaps:
-        gap += ALPHA_NUM[prev] + 1
-        prev = NUM_ALPHA[gap % len(NUM_ALPHA)]
-        crypt += prev
-    
-    return crypt
-
-def __randc(counter=0):
-    """
-    Generate random characters.
-    
-    Args:
-        counter (int): Number of characters to generate
-        
-    Returns:
-        str: Random characters
-    """
-    return_value = ""
-    for _ in range(counter):
-        return_value += NUM_ALPHA[random.randrange(len(NUM_ALPHA))]
-    return return_value
-
-def is_encrypted(value):
-    """
-    Check if a value is already encrypted.
-    
-    Args:
-        value (str): Value to check
-        
-    Returns:
-        bool: True if encrypted, False otherwise
-    """
-    return value.startswith(MAGIC)
-
-def junos_encrypt9(value, salt=None, rand=None):
-    """
-    Encrypt a value using Junos encrypt9 algorithm.
-    
-    Args:
-        value (str): Value to encrypt
-        salt (str): Salt character
-        rand (str): Random characters
-        
-    Returns:
-        str: Encrypted value
-    """
-    if not value:
-        return ""
-    
-    if is_encrypted(value):
-        return value
-    
-    if not salt and rand:
-        raise Exception("When rand is set, salt must be set as well")
-    
-    if not salt:
-        salt = __randc(1)
-    
-    if not rand:
-        rand = __randc(EXTRA[salt])
-    elif EXTRA[salt] != len(rand):
-        raise Exception(f"Salt set to {salt} but rand doesn't have the proper length ({len(rand)} instead of {EXTRA[salt]})")
-    
-    position = 0
-    previous = salt
-    crypted = MAGIC + salt + rand
-    
-    for x in value:
-        encode = ENCODING[position % len(ENCODING)]
-        crypted += __gap_encode(x, previous, encode)
-        previous = crypted[-1]
-        position += 1
-    
-    return crypted
 
 def get_property_sets(server, token):
     """
@@ -857,7 +513,7 @@ def create_property_set(server, token, label, values):
         "label": label,
         "values": values
     }
-    
+    print(body)
     try:
         # Make the request
         response = requests.post(
@@ -902,7 +558,7 @@ def update_property_set(server, token, property_set_id, label, values):
     """
     # Construct the API URL
     url = f"https://{server}/api/property-sets/{property_set_id}"
-    
+    print(url)
     # Set up the headers
     headers = {
         "AuthToken": token,
@@ -915,10 +571,9 @@ def update_property_set(server, token, property_set_id, label, values):
         "label": label,
         "values": values
     }
-    
     try:
         # Make the request
-        response = requests.put(
+        response = requests.patch(
             url,
             json=body,
             headers=headers,
@@ -927,22 +582,46 @@ def update_property_set(server, token, property_set_id, label, values):
         
         # Check if the request was successful
         if 200 <= response.status_code < 300:
-            return response.json()
+            # Don't even try to parse JSON for 202 responses
+            if response.status_code == 202:
+                return {"status": "success", "message": "Property set update accepted (202)"}
+            
+            # For other success codes, try to parse if there's content
+            if response.text.strip():
+                try:
+                    return response.json()
+                except json.JSONDecodeError:
+                    # Still consider it a success even if JSON parsing fails
+                    return {"status": "success", "message": "Property set updated successfully"}
+            else:
+                # Empty response is also success
+                return {"status": "success", "message": "Property set updated successfully"}
         
-        # Handle errors
-        try:
-            error_data = response.json()
-            print(f"Failed to update property set. Status code: {response.status_code}")
-            print(f"Response: {error_data}")
-            return {"error": error_data}
-        except json.JSONDecodeError:
-            print(f"Failed to update property set. Status code: {response.status_code}")
-            print(f"Response: {response.text}")
-            return {"error": response.text}
+        # Handle error responses
+        error_detail = "Unknown error"
+        if response.text.strip():
+            try:
+                error_data = response.json()
+                error_detail = json.dumps(error_data)
+            except json.JSONDecodeError:
+                error_detail = response.text
+        else:
+            error_detail = f"Empty response with status code {response.status_code}"
+        
+        return {
+            "error": f"API error: Status code {response.status_code}",
+            "detail": error_detail
+        }
         
     except requests.exceptions.RequestException as e:
+        error_msg = str(e)
+        # Check if this is a JSON decode error on an empty response
+        if "Expecting value: line 1 column 1" in error_msg:
+            # This is likely a 202 response with empty body
+            return {"status": "success", "message": "Property set update likely accepted"}
+        
         print(f"Error connecting to Apstra server: {e}")
-        return {"error": str(e)}
+        return {"error": error_msg}
 
 def find_property_set_by_label(property_sets, label):
     """
@@ -1058,9 +737,443 @@ def format_results_to_json(systems_results):
     Returns:
         dict: Formatted JSON payload
     """
-    # Create the final JSON structure
-    json_payload = {
-        "snmp_auth": systems_results
+    # Create a list to hold all system entries
+    formatted_list = []
+    
+    # Generate a starting ID for the entries
+    base_id = 556733423
+    
+    # Add each system's data to the list
+    for i, system in enumerate(systems_results):
+        hostname = system["hostname"]
+        id = system["system_id"]
+        auth_data = system["snmp-auth"]
+        
+        # Create an entry for this system
+        entry = {
+            "id": id,
+            "authentication_key": auth_data["authentication_key"],
+            "privacy_key": auth_data["privacy_key"],
+            "hostname": hostname
+        }
+        
+        # Add the entry to the list
+        formatted_list.append(entry)
+    
+    # Create the final structure
+    formatted_values = {
+        "snmp_auth": formatted_list
     }
     
-    return json_payload
+    return formatted_values
+
+
+def extract_snmp_auth_keys(result_data):
+    """
+    Extract SNMP authentication and privacy keys from command result.
+    
+    Args:
+        result_data (dict): Parsed command result data
+        
+    Returns:
+        dict: Dictionary containing authentication_key and privacy_key if found
+    """
+    auth_key = None
+    priv_key = None
+    
+    # Function to recursively search for keys in nested dictionaries
+    def search_keys(data, path=[]):
+        nonlocal auth_key, priv_key
+        
+        if isinstance(data, dict):
+            # Check if this is an authentication-key node
+            if "authentication-key" in data:
+                auth_key = data["authentication-key"]
+            
+            # Check if this is a privacy-key node
+            if "privacy-key" in data:
+                priv_key = data["privacy-key"]
+            
+            # Continue searching in child nodes
+            for key, value in data.items():
+                search_keys(value, path + [key])
+        
+        elif isinstance(data, list):
+            # Search through list items
+            for item in data:
+                search_keys(item, path)
+    
+    # Start recursive search
+    try:
+        search_keys(result_data)
+        
+        # Check if we found both keys
+        if auth_key and priv_key:
+            return {
+                "authentication_key": auth_key,
+                "privacy_key": priv_key
+            }
+        
+        # If we didn't find both keys, return error
+        missing = []
+        if not auth_key:
+            missing.append("authentication-key")
+        if not priv_key:
+            missing.append("privacy-key")
+            
+        return {
+            "error": f"extraction_error: Could not find {', '.join(missing)} in the response"
+        }
+        
+    except Exception as e:
+        return {
+            "error": f"unexpected_error: {str(e)}"
+        }
+    
+
+
+
+
+# import hashlib
+# import binascii
+# import hmac
+# import random
+# import string
+# from itertools import repeat
+# from functools import partial
+
+# # Constants for junos_encrypt9
+# MAGIC = "$9$"
+# FAMILY = [
+#     "QzF3n6/9CAtpu0O",
+#     "B1IREhcSyrleKvMW8LXx",
+#     "7N-dVbwsY2g4oaJZGUDj",
+#     "iHkq.mPf5T",
+# ]
+# EXTRA = {}
+# for counter, value in enumerate(FAMILY):
+#     for character in value:
+#         EXTRA[character] = 3 - counter
+
+# NUM_ALPHA = [x for x in "".join(FAMILY)]
+# ALPHA_NUM = {NUM_ALPHA[x]: x for x in range(0, len(NUM_ALPHA))}
+
+# ENCODING = [
+#     [1, 4, 32],
+#     [1, 16, 32],
+#     [1, 8, 32],
+#     [1, 64],
+#     [1, 32],
+#     [1, 4, 16, 128],
+#     [1, 32, 64],
+# ]
+
+# # Constants for SNMP v3
+# LOCAL_ENGINE_PREFIX = "80000a4c04"
+
+# def generate_snmp_keys(engine_id, password, salt='j', rand='a'):
+#     """
+#     Generate SNMP v3 authentication and privacy keys from a password and engine ID.
+    
+#     Args:
+#         engine_id (str): SNMP engine ID (format: "xx xx xx xx xx...")
+#         password (str): Clear text password
+#         salt (str): Salt character for encryption (default: 'j')
+#         rand (str): Random character for encryption (default: 'a')
+        
+#     Returns:
+#         dict: Dictionary containing authentication_key and privacy_key
+#     """
+#     # Remove spaces from engine ID
+#     engine_id_clean = engine_id.replace(" ", "")
+    
+#     # Generate authentication key
+#     auth_key = junos_snmpv3_auth_hash(password, engine_id_clean, hash_alg='sha1')
+#     encrypted_auth_key = junos_encrypt9(auth_key, salt, rand)
+    
+#     # Generate privacy key
+#     priv_key = junos_snmpv3_priv_hash(password, engine_id_clean, hash_alg='sha1')
+#     encrypted_priv_key = junos_encrypt9(priv_key, salt, rand)
+    
+#     return {
+#         "authentication_key": encrypted_auth_key,
+#         "privacy_key": encrypted_priv_key
+#     }
+
+# # SNMP v3 Key Generation Functions
+# def hashgen_hash(bytes_data, alg=hashlib.sha1, name=None, raw=False):
+#     """
+#     Generate a hash of the provided bytes.
+    
+#     Args:
+#         bytes_data (bytes): Data to hash
+#         alg (function): Hash algorithm function
+#         name (str): Name of the algorithm (not used)
+#         raw (bool): Whether to return raw bytes or hex string
+        
+#     Returns:
+#         bytes or str: Hash digest
+#     """
+#     digest = alg(bytes_data).digest()
+#     return digest if raw else digest.hex()
+
+# def hashgen_expand(substr, target_len):
+#     """
+#     Expand a substring to the target length by repeating it.
+    
+#     Args:
+#         substr (str): Substring to expand
+#         target_len (int): Target length
+        
+#     Returns:
+#         str: Expanded string
+#     """
+#     reps = (target_len // len(substr) + 1)
+#     return "".join(list(repeat(substr, reps)))[:target_len]
+
+# def hashgen_kdf(password, alg_func=None):
+#     """
+#     Key derivation function.
+    
+#     Args:
+#         password (str): Password to derive key from
+#         alg_func (function): Hash algorithm function
+        
+#     Returns:
+#         bytes: Derived key
+#     """
+#     alg_func = partial(hashgen_hash, alg=hashlib.sha1, name="sha1") if alg_func is None else alg_func
+    
+#     data = hashgen_expand(password, 1048576).encode("utf-8")
+#     return alg_func(data, raw=True)
+
+# def hashgen_derive_msg(passphrase, engine, alg_func):
+#     """
+#     Derive message for SNMP v3 key generation.
+    
+#     Args:
+#         passphrase (str): Passphrase
+#         engine (str): Engine ID (hex string)
+#         alg_func (function): Hash algorithm function
+        
+#     Returns:
+#         bytes: Derived message
+#     """
+#     Ku = hashgen_kdf(passphrase, alg_func)
+#     E = bytearray.fromhex(engine)
+    
+#     return b"".join([Ku, E, Ku])
+
+# def junos_snmpv3_engine_id(value, engine_type="local"):
+#     """
+#     Generate SNMP v3 engine ID.
+    
+#     Args:
+#         value (str): Value to use for engine ID
+#         engine_type (str): Engine type (only 'local' supported)
+        
+#     Returns:
+#         str: Engine ID
+#     """
+#     if engine_type == "local":
+#         return f"{LOCAL_ENGINE_PREFIX}{bytes(value.encode('utf-8')).hex()}"
+#     else:
+#         raise ValueError(f"No engine type named {engine_type}")
+
+# def junos_snmpv3_auth_hash(value, engine_id, hash_alg='sha1'):
+#     """
+#     Generate SNMP v3 authentication hash.
+    
+#     Args:
+#         value (str): Password
+#         engine_id (str): Engine ID
+#         hash_alg (str): Hash algorithm
+        
+#     Returns:
+#         str: Authentication hash
+#     """
+#     alg_func = partial(hashgen_hash, alg=getattr(hashlib, hash_alg), name=hash_alg)
+#     Kul_auth = hashgen_derive_msg(value, engine_id, alg_func)
+#     return alg_func(Kul_auth)
+
+# def junos_snmpv3_priv_hash(value, engine_id, hash_alg='sha1'):
+#     """
+#     Generate SNMP v3 privacy hash.
+    
+#     Args:
+#         value (str): Password
+#         engine_id (str): Engine ID
+#         hash_alg (str): Hash algorithm
+        
+#     Returns:
+#         str: Privacy hash
+#     """
+#     alg_func = partial(hashgen_hash, alg=getattr(hashlib, hash_alg), name=hash_alg)
+#     Kul_priv = hashgen_derive_msg(value, engine_id, alg_func)
+#     if hash_alg == "sha1":
+#         return alg_func(Kul_priv)[:32]
+#     else:
+#         return alg_func(Kul_priv)
+
+# # Junos Encryption Functions
+# def __nibble(cref, length):
+#     """
+#     Extract a nibble from a string.
+    
+#     Args:
+#         cref (str): String to extract from
+#         length (int): Length of nibble
+        
+#     Returns:
+#         tuple: (nibble, rest)
+#     """
+#     nib = cref[0:length]
+#     rest = cref[length:]
+    
+#     if len(nib) != length:
+#         raise Exception(f"Ran out of characters: hit '{nib}', expecting {length} chars")
+    
+#     return nib, rest
+
+# def __gap(c1, c2):
+#     """
+#     Calculate gap between two characters.
+    
+#     Args:
+#         c1 (str): First character
+#         c2 (str): Second character
+        
+#     Returns:
+#         int: Gap value
+#     """
+#     return (ALPHA_NUM[str(c2)] - ALPHA_NUM[str(c1)]) % (len(NUM_ALPHA)) - 1
+
+# def __gap_decode(gaps, dec):
+#     """
+#     Decode gaps to character.
+    
+#     Args:
+#         gaps (list): Gap values
+#         dec (list): Decode values
+        
+#     Returns:
+#         str: Decoded character
+#     """
+#     num = 0
+    
+#     if len(gaps) != len(dec):
+#         raise Exception("Nibble and decode size not the same.")
+    
+#     for x in range(0, len(gaps)):
+#         num += gaps[x] * dec[x]
+    
+#     return chr(num % 256)
+
+# def __reverse(current):
+#     """
+#     Reverse a list.
+    
+#     Args:
+#         current (list): List to reverse
+        
+#     Returns:
+#         list: Reversed list
+#     """
+#     reversed_list = list(current)
+#     reversed_list.reverse()
+#     return reversed_list
+
+# def __gap_encode(pc, prev, encode):
+#     """
+#     Encode a character using gap values.
+    
+#     Args:
+#         pc (str): Character to encode
+#         prev (str): Previous character
+#         encode (list): Encoding values
+        
+#     Returns:
+#         str: Encoded string
+#     """
+#     __ord = ord(pc)
+    
+#     crypt = ""
+#     gaps = []
+#     for mod in __reverse(encode):
+#         gaps.insert(0, int(__ord / mod))
+#         __ord %= mod
+    
+#     for gap in gaps:
+#         gap += ALPHA_NUM[prev] + 1
+#         prev = NUM_ALPHA[gap % len(NUM_ALPHA)]
+#         crypt += prev
+    
+#     return crypt
+
+# def __randc(counter=0):
+#     """
+#     Generate random characters.
+    
+#     Args:
+#         counter (int): Number of characters to generate
+        
+#     Returns:
+#         str: Random characters
+#     """
+#     return_value = ""
+#     for _ in range(counter):
+#         return_value += NUM_ALPHA[random.randrange(len(NUM_ALPHA))]
+#     return return_value
+
+# def is_encrypted(value):
+#     """
+#     Check if a value is already encrypted.
+    
+#     Args:
+#         value (str): Value to check
+        
+#     Returns:
+#         bool: True if encrypted, False otherwise
+#     """
+#     return value.startswith(MAGIC)
+
+# def junos_encrypt9(value, salt=None, rand=None):
+#     """
+#     Encrypt a value using Junos encrypt9 algorithm.
+    
+#     Args:
+#         value (str): Value to encrypt
+#         salt (str): Salt character
+#         rand (str): Random characters
+        
+#     Returns:
+#         str: Encrypted value
+#     """
+#     if not value:
+#         return ""
+    
+#     if is_encrypted(value):
+#         return value
+    
+#     if not salt and rand:
+#         raise Exception("When rand is set, salt must be set as well")
+    
+#     if not salt:
+#         salt = __randc(1)
+    
+#     if not rand:
+#         rand = __randc(EXTRA[salt])
+#     elif EXTRA[salt] != len(rand):
+#         raise Exception(f"Salt set to {salt} but rand doesn't have the proper length ({len(rand)} instead of {EXTRA[salt]})")
+    
+#     position = 0
+#     previous = salt
+#     crypted = MAGIC + salt + rand
+    
+#     for x in value:
+#         encode = ENCODING[position % len(ENCODING)]
+#         crypted += __gap_encode(x, previous, encode)
+#         previous = crypted[-1]
+#         position += 1
+    
+#     return crypted
