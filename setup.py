@@ -7,12 +7,12 @@ with open('requirements.txt') as f:
 setup(
     name="streamlit-app",
     version="0.1.0",
-    author="Your Name",
-    author_email="your.email@example.com",
+    author="Adam Jarvis",
+    author_email="",
     description="A Streamlit application template",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/your-repo-name",
+    url="https://github.com/iamjarvs/your-repo-name",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

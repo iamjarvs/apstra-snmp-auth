@@ -3,12 +3,12 @@
 FROM iamjarvs/base-dev-image:latest
 
 LABEL maintainer="Adam J"
-LABEL description="Streamlit application Docker image"
+LABEL description="SNMP Auth File"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    STREAMLIT_SERVER_PORT=8501 \
+    STREAMLIT_SERVER_PORT=8502 \
     STREAMLIT_SERVER_HEADLESS=true \
     STREAMLIT_SERVER_ENABLE_CORS=false
 
@@ -36,4 +36,4 @@ USER appuser
 CMD ["streamlit", "run", "app/ui/streamlit_app.py", "--server.address=0.0.0.0"]
 
 # Health check
-HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
+HEALTHCHECK CMD curl --fail http://localhost:8502/_stcore/health || exit 1

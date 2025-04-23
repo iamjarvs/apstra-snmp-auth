@@ -1,4 +1,5 @@
 README.pdf
+*.pdf
 
 # macOS specific
 .DS_Store
