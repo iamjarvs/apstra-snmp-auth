@@ -7,6 +7,8 @@ import sys
 import os
 from pathlib import Path
 
+sys.path.append(os.getcwd())  # Add the current directory to the Python path
+
 # Add the parent directory to the path for imports
 parent_dir = Path(__file__).resolve().parent.parent.parent
 if str(parent_dir) not in sys.path:
