@@ -29,3 +29,13 @@ for interacting with the Apstra API and automating the key extraction process.
 2. **Select a blueprint** containing the devices you want to work with.
 3. **Execute commands** to retrieve SNMP authentication information.
 4. **Save or upload** the results as needed.
+
+
+
+# Docker Build 
+
+docker buildx build \
+-t iamjarvs/apstra_snmp_auth:buildx-latest \
+--platform linux/arm64,linux/amd64 \
+--push \
+.

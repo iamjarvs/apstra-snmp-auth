@@ -33,7 +33,7 @@ function show_usage {
 # Function to build the Docker image
 function build_image {
     echo -e "${GREEN}Building Docker image ${IMAGE_NAME}:${IMAGE_TAG}...${NC}"
-    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+docker buildx build -t iamjarvs/apstra_snmp_auth:buildx-latest --platform linux/arm64,linux/amd64 --push .
     
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}Docker image built successfully!${NC}"
