@@ -24,10 +24,13 @@ This was built with a combination of my own work and Claude's Sonnet 3.7 model.
 Live Demo @ https://apstra-snmp-app.streamlit.app/
 
 Bulk Hash Key Retrieval
-![](https://github.com/user-attachments/assets/8cb0a677-3e88-4075-a1f9-5be1f88deaea)
+
+https://github.com/user-attachments/assets/8cb0a677-3e88-4075-a1f9-5be1f88deaea
 
 Per Blueprint Key Retrieval
-![](https://github.com/user-attachments/assets/fd00a420-141a-43b5-be6f-140a244c341b)
+
+https://github.com/user-attachments/assets/fd00a420-141a-43b5-be6f-140a244c341b
+
 
 ## Installation
 
